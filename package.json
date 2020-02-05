@@ -1,0 +1,39 @@
+{
+  "name": "fastify-esso",
+  "version": "0.9.0",
+  "description": "Fastify plugin for easy single sign-on",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "tap lib/*.test.js --100"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patrickpissurno/fastify-esso.git"
+  },
+  "keywords": [
+    "fastify",
+    "easy",
+    "single",
+    "sign",
+    "on",
+    "auth",
+    "login",
+    "authentication",
+    "fast",
+    "jwt"
+  ],
+  "author": "Patrick Pissurno",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/patrickpissurno/fastify-esso/issues"
+  },
+  "homepage": "https://github.com/patrickpissurno/fastify-esso#readme",
+  "dependencies": {
+    "fastify": "^2.11.0",
+    "fastify-plugin": "^1.6.0",
+    "http-errors": "^1.7.3"
+  },
+  "devDependencies": {
+    "tap": "^14.10.6"
+  }
+}
