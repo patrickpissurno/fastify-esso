@@ -294,9 +294,9 @@ None yet. But you're welcome to open a PR.
 
 ## TODO
 
-* [ ] Add unit tests
-* [ ] Add integration tests
-* [ ] Coverage 100%
+* [x] Add unit tests
+* [x] Add integration tests
+* [x] Coverage 100%
 * [ ] Add benchmarks
 
 
