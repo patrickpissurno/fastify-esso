@@ -6,7 +6,7 @@
 [![downloads](https://img.shields.io/npm/dt/fastify-esso.svg)](http://npm-stats.com/~packages/fastify-esso)
 [![license](https://img.shields.io/github/license/patrickpissurno/fastify-esso.svg?maxAge=1800)](https://github.com/patrickpissurno/fastify-esso/blob/master/LICENSE)
 
-Hate boilerplate code? Want something fast and still impossible to break?
+Hate boilerplate code? Want something fast and still impossible[<sup>[1]</sup>](https://crypto.stackexchange.com/questions/6712/is-aes-256-a-post-quantum-secure-cipher-or-not) to break?
 
 Then, this plugin is for you.
 
@@ -48,7 +48,7 @@ fastify.post('/auth', async (req, reply) => {
 ### #2 - Token generation
 It turns out you were invited, so the guard proceeds to give you a party wristband (*eg.* token). But this is a tech party, so it has a built-in NFC chip that can store some info. Cool! 
 
-This is implemented by this plugin and is fricking awesome! Let's take a look at the updated code:
+This is implemented by this plugin! Let's take a look at the updated code:
 ```js
 fastify.post('/auth', async (req, reply) => {
 
@@ -150,9 +150,9 @@ Actually, just two [decorators](https://www.fastify.io/docs/latest/Decorators/) 
   **Returns**: nothing.  
   
 ### How does it work?
-Symmetric encryption. This plugin uses the native Node.js `crypto` module to provide us with the military-grade encryption AES (Advanced Encryption Standard), with 256-bits key size and CBC mode (TLDR: `aes-256-cbc`).
+Symmetric encryption. This plugin uses the native Node.js `crypto` module to provide us with the military-grade[<sup>[2]</sup>](https://en.wikipedia.org/wiki/NSA_encryption_systems#Public_systems)‎[<sup>[3]</sup>](https://en.wikipedia.org/wiki/NSA_product_types#Type_1_product) encryption AES (Advanced Encryption Standard), with 256-bits key size and CBC mode (TL;DR: `aes-256-cbc`).
 
-It works in a quite similar way to JWTs, but cutting out the bullshit and providing data encryption (instead of simply signing it). 
+It works in a quite similar way to JWTs, but reducing overhead and providing data encryption (instead of simply signing it). 
 
 When you call `await fastify.generateAuthToken({ user: 'Josh' })`, the library converts the data to JSON, and then encrypts it.
 
@@ -167,18 +167,18 @@ By doing it this way we guarantee:
   *JWT also gives you this*
 - That nobody, including the user, can view the data (without the encryption secret, its just gibberish).  
   **JWT doesn't provide this**.
-- That the data is disguised as a regular bearer token, and that noone will ever know that it actually means something. (We use random IVs, so you'll never get repeated tokens, even if the data itself is the same).  
+- That the data is disguised as a regular bearer token, and that no one will ever know[<sup>[1]</sup>](https://crypto.stackexchange.com/questions/6712/is-aes-256-a-post-quantum-secure-cipher-or-not) that it actually means something. (We use random IVs, so you'll never get repeated tokens, even if the data itself is the same[<sup>[4]</sup>](https://crypto.stackexchange.com/questions/3883/why-is-cbc-with-predictable-iv-considered-insecure-against-chosen-plaintext-atta)).  
   **JWT doesn't provide this**.
 - Much more compact than JWTs, meaning less bandwidth usage. Still, we advise against storing a bunch of information in it. It's not because you can, that you should :)
 
 ### Is it safe?
-We use the industry-standard symmetric encryption algorithm (**[AES-256-CBC](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)**) and a strong [key derivation function](https://en.wikipedia.org/wiki/Key_derivation_function), **[scrypt](https://en.wikipedia.org/wiki/Scrypt)**, to make it impossible to break as long as you **keep the secret safe**, and use one that is a random enough (*eg*. don't use 12345678 or anything as stupid).
+We use the industry-standard[<sup>[2]</sup>](https://en.wikipedia.org/wiki/NSA_encryption_systems#Public_systems)‎[<sup>[3]</sup>](https://en.wikipedia.org/wiki/NSA_product_types#Type_1_product) symmetric encryption algorithm (**[AES-256-CBC](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)**) and a strong [key derivation function](https://en.wikipedia.org/wiki/Key_derivation_function), **[scrypt](https://en.wikipedia.org/wiki/Scrypt)**, to make it impossible to break[<sup>[5, p. 14]</sup>](https://www.tarsnap.com/scrypt/scrypt.pdf) as long as you **keep the secret safe**, and use one that is a random enough (*eg*. don't use 12345678 or anything like that).
 The secret also has to have a length of at least 20 characters, otherwise this plugin will throw an error. We also use cryptographically-secure random IVs ([Initialization Vectors](https://en.wikipedia.org/wiki/Initialization_vector)). This way we end up with a very strong encryption.
 
-So yeah, **this is fricking safe**.
+So yeah, **this is really safe**.
 
 ### Is it tested?
-We adhere to the **strict 100% coverage standard**. There are [continuous integration](https://en.wikipedia.org/wiki/Continuous_integration) tools in place. Which means that all tests are run with every commit. If any of them fail, or the code coverage isn't 100%, then it won't go to NPM. Simple as that. 
+We adhere to a **strict 100% coverage standard**. There are [continuous integration](https://en.wikipedia.org/wiki/Continuous_integration) tools in place. Which means that all tests are run with every commit. If any of them fail, or the code coverage isn't 100%, then it won't go to NPM. Simple as that. 
 
 So yeah, **it's tested**.
 
@@ -218,7 +218,7 @@ It would work like this (without this plugin, W means *any* microservice):
 It would be complicated to implement, as a lot of code would be repeated, and a huge standardization would have to take place to make sure that each microservice would implement authentication and validation the same way.
 Also, it would incur in a big overhead to the authentication database. Not that great.
 
-In general, the first approach (Centralized Authentication Server) is better. But we can still improve this one to make it more viable, if for some reason it suits you better.
+In general, the first approach (Centralized Authentication Server) is better. But we can still improve on this one to make it more viable, if for some reason it suits you better.
 
 Improved approach (using this plugin, W means *any* microservice):
 1. **User** <-> **W** (authenticates and receives token)
@@ -234,6 +234,14 @@ In this last example, the main advantages of using this plugin are:
 
 In almost every situation, this plugin helps improve stuff. So yeah, you should be using it. And I'm aware that there are other Fastify plugins for authentication (even official ones).
 But after reading through all of this, you're probably aware of why this one is the one authentication plugin you should be using.
+
+### References
+1. [Is AES-256 a post-quantum secure cipher or not?](https://crypto.stackexchange.com/questions/6712/is-aes-256-a-post-quantum-secure-cipher-or-not)
+2. [NSA Encryption Systems - Advanced Encryption Standard (AES)](https://en.wikipedia.org/wiki/NSA_encryption_systems#Public_systems)
+3. [NSA product types - Type 1 product](https://en.wikipedia.org/wiki/NSA_product_types#Type_1_product)
+4. [Why should you use CBC with random IVs](https://crypto.stackexchange.com/questions/3883/why-is-cbc-with-predictable-iv-considered-insecure-against-chosen-plaintext-atta)
+5. [Stronger Key Derivation Via Sequential
+Memory-hard Functions](https://www.tarsnap.com/scrypt/scrypt.pdf) (page 14, "Estimated cost of hardware to crack a password in 1 year")
 
 
 <br><br>
