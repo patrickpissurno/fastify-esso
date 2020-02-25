@@ -252,7 +252,8 @@ Memory-hard Functions](https://www.tarsnap.com/scrypt/scrypt.pdf) (page 14, "Est
 ### Register
 ```js
 const opts = {
-    header_name: 'authentication' // defaults to authentication
+    /** request header name and/or query parameter name and/or cookie name */
+    header_name: 'authentication' // defaults to 'authentication'
     
     secret: '11111111111111111111', // cannot be ommited
     
@@ -263,7 +264,16 @@ const opts = {
          * This function should throw in case validation fails
          * req.auth is already available here
          */
-    }
+    },
+
+    /** set this to true if you don't want to allow the token to be passed as a header */
+    disable_headers: false,
+
+    /** set this to true if you don't want to allow the token to be passed as a query parameter */
+    disable_query: false,
+
+    /** set this to true if you don't want to allow the token to be passed as a cookie */
+    disable_cookies: false,
 };
 
 fastify.register(require('fastify-esso')(opts));

@@ -30,6 +30,7 @@
   "homepage": "https://github.com/patrickpissurno/fastify-esso#readme",
   "dependencies": {
     "fastify": "^2.11.0",
+    "fastify-cookie": "^3.6.0",
     "fastify-plugin": "^1.6.0",
     "http-errors": "^1.7.3"
   },
