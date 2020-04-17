@@ -18,8 +18,13 @@ declare module "fastify" {
   }
 
   interface FastifyInstance {
+<<<<<<< Updated upstream
     generateAuthToken;
     requireAuthentication;
+=======
+    generateAuthToken: function (any): Promise<string>;
+    requireAuthentication: function (FastifyInstance): void;
+>>>>>>> Stashed changes
   }
 }
 
