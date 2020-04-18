@@ -12,6 +12,8 @@ Then, this plugin is for you.
 
 This [`fastify`](https://www.fastify.io) plugin turns the usual authentication nightmare into **something easily manageable**.
 
+And also has first-party support for TypeScript (if you're into that kind of thing). Thanks @dodiego for the PR!
+
 
 <br>
 
@@ -315,6 +317,7 @@ None yet. But you're welcome to open a PR.
 * [x] Add unit tests
 * [x] Add integration tests
 * [x] Coverage 100%
+* [x] Add first-party TypeScript support
 * [ ] Add benchmarks
 
 
