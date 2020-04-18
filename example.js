@@ -5,7 +5,7 @@ fastify.register(require('.')({ secret: '11111111111111111111' }));
 
 /** @param { import('fastify').FastifyInstance } fastify */
 async function routes(fastify){
-    fastify.get('/', (req, reply) => reply.send({ public: true }));
+    fastify.get('/', async (req, reply) => reply.send({ public: true }));
     
     fastify.post('/auth', async (req, reply) => {
         const valid_credentials = req.body.user === 'John' && req.body.password === '123'; //never use this in production (unsafe). instead, use crypto.timingSafeEqual
@@ -25,7 +25,7 @@ async function routes(fastify){
 async function privateRoutes(fastify){
     fastify.requireAuthentication(fastify);
 
-    fastify.get('/test', (req, reply) => reply.send({ private: true, message: 'Hello, ' + req.auth.user + '!' }));
+    fastify.get('/test', async  (req, reply) => reply.send({ private: true, message: 'Hello, ' + req.auth.user + '!' }));
 }
 
 fastify.register(routes);
