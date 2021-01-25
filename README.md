@@ -328,7 +328,7 @@ None yet. But you're welcome to open a PR.
 ## License
 MIT License
 
-Copyright (c) 2020 Patrick Pissurno
+Copyright (c) 2020-2021 Patrick Pissurno
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
