@@ -12,7 +12,7 @@ Then, this plugin is for you.
 
 This [`fastify`](https://www.fastify.io) plugin turns the usual authentication nightmare into **something easily manageable**.
 
-And also has first-party support for TypeScript (if you're into that kind of thing). Thanks @dodiego for the PR!
+And also has first-party support for TypeScript (completely optional). Thanks @dodiego for the PR!
 
 
 <br>
@@ -32,7 +32,7 @@ fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3
 ```
 
 ### #1 - Credentials validation
-Just like going to a party. In the entrance there is this guard. You can't just walk past him. You need to **show your ID** and then he'll **check if you were invited** (*eg.* has access).
+Just like going to a party. In the entrance there is this guard. You can't just walk past her. You need to **show your ID** and then she'll **check if you were invited** (*eg.* have access).
 
 This is not implemented by this plugin. But it is still quite simple. Let's write some sample code:
 ```js
@@ -67,7 +67,7 @@ fastify.post('/auth', async (req, reply) => {
 ```
 
 ### #3 - Token validation
-You join the party and dance a lot. Now you're thirst, so what about a drink? The barman scans your wristband (*eg.* validates) and instantly knows who you are, so he proceeds to give you the drink. Sweet!
+You join the party and dance a lot. Now you're thirst, so what about a drink? The barman scans your wristband (*eg.* validates) and instantly knows who you are, so she proceeds to give you the drink. Sweet!
 
 This is also implemented by this plugin! So let's update the example:
 ```js
@@ -161,13 +161,13 @@ When you call `await fastify.generateAuthToken({ user: 'Josh' })`, the library c
 When the user uses this token (sends it in the request header, which defaults to `authorization` but that can be changed), this plugin will decrypt it and then decorate Fastify's **request object** with the original data.
 
 By doing it this way we guarantee:
-- That the user authenticated successfully (otherwise he wouldn't have been able to generate valid encrypted content, as he doesn't know the secret).  
+- That the user authenticated successfully (otherwise they wouldn't have been able to generate valid encrypted content, as they don't know the secret).  
   *JWT also gives you this*.
-- That you don't need to access an external database, such as MySQL or Redis, just to verify if the token is valid. This reduces latency and load in your databases.  
+- That you don't need to access an external database, such as MySQL or Redis, just to verify whether the token is valid or not. This reduces latency and load in your databases.  
   *JWT also gives you this*
-- That nobody, including the user, can change the data (its encrypted after all).  
+- That nobody, including the user, can change the data (it's encrypted after all).  
   *JWT also gives you this*
-- That nobody, including the user, can view the data (without the encryption secret, its just gibberish).  
+- That nobody, including the user, can view the data (without the encryption secret, it's just gibberish).  
   **JWT doesn't provide this**.
 - That the data is disguised as a regular bearer token, and that no one will ever know[<sup>[1]</sup>](https://crypto.stackexchange.com/questions/6712/is-aes-256-a-post-quantum-secure-cipher-or-not) that it actually means something. (We use random IVs, so you'll never get repeated tokens, even if the data itself is the same[<sup>[4]</sup>](https://crypto.stackexchange.com/questions/3883/why-is-cbc-with-predictable-iv-considered-insecure-against-chosen-plaintext-atta)).  
   **JWT doesn't provide this**.
@@ -195,7 +195,7 @@ It would work like this (without this plugin):
 3. **X** <-> **AS** (validates token)
 4. **User** <- **X** (sends the response back)
 
-This would have **poor performance** (for every request to any microservice, there will be another request to the AS, causing it to suffer a big load) and a **single point-of-failure** (if the AS goes down, everything goes too). It simply doesn't scale nor work great for distributed stuff.
+This would have **poor performance** (for every request to any microservice, there would be another request to the AS, causing it to suffer a big load) and a **single point-of-failure** (if the AS goes down, everything goes down too). It simply doesn't scale nor work great for distributed stuff.
 
 Now let's make this right by using this plugin. It would work like this:
 1. **User** <-> **AS** (authenticates and receives token)
