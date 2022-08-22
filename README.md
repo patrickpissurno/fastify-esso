@@ -83,7 +83,7 @@ async function privateRoutes(fastify){
 fastify.register(privateRoutes);
 ```
 
-All you have to do is call `fastify.requireAuthentication(fastify)` and every route inside the current fastify scope will require authentication to be accessed.
+All you have to do is call `fastify.requireAuthentication(fastify)` or `fastify.the_name_you_used(fastify)` and every route inside the current fastify scope will require authentication to be accessed.
 
 *You might want to take a deeper look into [how Fastify's scopes work](https://www.fastify.io/docs/latest/Getting-Started/#your-first-plugin).*
 
@@ -114,6 +114,7 @@ fastify.post('/auth', async (req, reply) => {
 });
 
 async function privateRoutes(fastify){
+    // fastify.the_name_you_used(fastify)
     fastify.requireAuthentication(fastify); //this is where all the magic happens
 
     fastify.get('/order-drink', async (req, reply) => {
@@ -136,15 +137,15 @@ fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3
 ### What does this plugin provide?
 Actually, just two [decorators](https://www.fastify.io/docs/latest/Decorators/) to the Fastify server instance:
 
-- `fastify.generateAuthToken(data)`  
+- `fastify.generateAuthToken(data)`  OR `fastify.the_name_you_used(data)`
  Call this function to generate an authentication token that grants access to routes that require authentication.  
   **Parameters**: 
-  - `data`: an `object` (can contain any data) that will be [decorated](https://www.fastify.io/docs/latest/Decorators/) in the **request object** and can be accessed via `req.auth` only for routes inside authenticated scopes.  
+  - `data`: an `object` (can contain any data) that will be [decorated](https://www.fastify.io/docs/latest/Decorators/) in the **request object** and can be accessed via `req.auth` OR `req.the_name_you_used` only for routes inside authenticated scopes.  
   
   **Returns**: a `Promise` that once resolved, turns into a `string` containing the token.  
 
 
-- `fastify.requireAuthentication(fastify)`  
+- `fastify.requireAuthentication(fastify)`  OR `fastify.the_name_you_used(fastify)`
  Call this function to require authentication for every route inside the current [Fastify scope](https://www.fastify.io/docs/latest/Getting-Started/#your-first-plugin).  
   **Parameters**: 
   - `fastify`: the current [Fastify scope](https://www.fastify.io/docs/latest/Getting-Started/#your-first-plugin) that will now require authentication.
@@ -267,6 +268,15 @@ const opts = {
          * req.auth is already available here
          */
     },
+
+    /** Change the name of generateAuthToken decorator, useful if you want to register this package for different authentications */
+    generateAuthToken_name: "generateAuthToken",
+
+    /** Change the name of requireAuthentication decorator, useful if you want to register this package for different authentications */
+    requireAuthentication_name: "requireAuthentication",
+
+    /** Change the name of the request decorator, actual token will be available here once verified, useful if you want to register this package for different authentications */
+    verifiedToken_data_name: "auth",
 
     /** set this to true if you don't want to allow the token to be passed as a header */
     disable_headers: false,
