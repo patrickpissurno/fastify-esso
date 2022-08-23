@@ -40,10 +40,44 @@ export interface EssoOptions {
     disable_cookies?: boolean;
 
     /**
-     * Sets the token prefix, by default 'Bearer ' is used. A null value means no prefix
+     * Sets the token prefix, by default `'Bearer '` is used. A null value means no prefix
      * @default 'Bearer '
      */
-     token_prefix?: string;
+    token_prefix?: string;
+
+    /**
+     * Allows for renaming the decorators this plugin adds to Fastify.
+     * Useful if you want to register this plugin multiple times in the same scope
+     * (not usually needed, but can be useful sometimes).
+     * 
+     * Note: if using TypeScript and intending to use this feature, you'll probably
+     * want to add type definitions for the renamed decorators, otherwise it might complain
+     * that they don't exist.
+     * */
+    rename_decorators?: EssoRenameDecoratorsOptions;
+
+}
+
+export interface EssoRenameDecoratorsOptions {
+    
+    /**
+     * Change the name of the `FastifyInstance.requireAuthentication` decorator
+     * @default 'requireAuthentication'
+     */
+    requireAuthentication?: string;
+    
+    /**
+     * Change the name of the `FastifyInstance.generateAuthToken` decorator
+     * @default 'generateAuthToken'
+     */
+     generateAuthToken?: string;
+    
+    /**
+     * Change the name of the `FastifyRequest.auth` decorator
+     * @default 'auth'
+     */
+     auth?: string;
+
 }
 
 declare module 'fastify' {

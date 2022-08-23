@@ -156,7 +156,7 @@ Symmetric encryption. This plugin uses the native Node.js `crypto` module to pro
 
 It works in a quite similar way to JWTs, but reducing overhead and providing data encryption (instead of simply signing it). 
 
-When you call `await fastify.generateAuthToken({ user: 'Josh' })`, the library converts the data to JSON, and then encrypts it.
+When you call `await fastify.generateAuthToken({ user: 'Josh' })`, the plugin converts the data to JSON, and then encrypts it.
 
 When the user uses this token (sends it in the request header, which defaults to `authorization` but that can be changed), this plugin will decrypt it and then decorate Fastify's **request object** with the original data.
 
@@ -280,6 +280,26 @@ const opts = {
 
     /** Sets the token prefix. A null value means no prefix */
     token_prefix: 'Bearer ', // defaults to 'Bearer '
+
+    /**
+     * Allows for renaming the decorators this plugin adds to Fastify.
+     * Useful if you want to register this plugin multiple times in the same scope
+     * (not usually needed, but can be useful sometimes).
+     * 
+     * Note: if using TypeScript and intending to use this feature, you'll probably
+     * want to add type definitions for the renamed decorators, otherwise it might complain
+     * that they don't exist.
+     * */
+    rename_decorators: {
+        /** Change the name of the FastifyInstance.requireAuthentication decorator */
+        requireAuthentication: 'requireAuthentication',
+
+        /** Change the name of the FastifyInstance.generateAuthToken decorator */
+        generateAuthToken: 'generateAuthToken',
+        
+        /** Change the name of the FastifyRequest.auth decorator */
+        auth: 'auth',
+    }
 };
 
 fastify.register(require('fastify-esso')(opts));
@@ -293,7 +313,9 @@ Call this function to generate an authentication token that grants access to rou
 **Parameters**: 
   - `data`: an `object` (can contain any data) that will be [decorated](https://www.fastify.io/docs/latest/Decorators/) in the **request object** and can be accessed via `req.auth` only for routes inside authenticated scopes.  
   
-**Returns**: a `Promise` that once resolved, turns into a `string` containing the token.  
+**Returns**: a `Promise` that once resolved, turns into a `string` containing the token.
+
+Note: you can rename this decorator if you want to (look at the `rename_decorators` option above).
 
 <br>
 
@@ -305,6 +327,7 @@ Call this function to require authentication for every route inside the current 
   
 **Returns**: nothing.  
 
+Note: you can rename this decorator if you want to (look at the `rename_decorators` option above).
 
 <br><br>
 
