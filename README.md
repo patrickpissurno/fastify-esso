@@ -67,7 +67,7 @@ fastify.post('/auth', async (req, reply) => {
 ```
 
 ### #3 - Token validation
-You join the party and dance a lot. Now you're thirst, so what about a drink? The barman scans your wristband (*eg.* validates) and instantly knows who you are, so she proceeds to give you the drink. Sweet!
+You join the party and dance a lot. Now you're thirst, so what about a drink? The barman scans your wristband (*eg.* validates) and instantly knows who you are, so he proceeds to give you the drink. Sweet!
 
 This is also implemented by this plugin! So let's update the example:
 ```js
