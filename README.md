@@ -254,28 +254,32 @@ Memory-hard Functions](https://www.tarsnap.com/scrypt/scrypt.pdf) (page 14, "Est
 ### Register
 ```js
 const opts = {
-    /** request header name and/or query parameter name and/or cookie name */
-    header_name: 'authentication' // defaults to 'authentication'
+    /** Request header name / query parameter name / cookie name */
+    header_name: 'authorization', // defaults to 'authorization'
     
+    /** Secure key that will be used to do the encryption stuff */
     secret: '11111111111111111111', // cannot be ommited
     
-    /** request and reply are Fastify's request and reply **/
+    /** request and reply are Fastify's request and reply objects **/
     extra_validation: async function validation (request, reply){ // can be ommited
         /**
          * Custom validation function that is called after basic validation is executed
          * This function should throw in case validation fails
-         * req.auth is already available here
+         * request.auth is already available here
          */
     },
 
-    /** set this to true if you don't want to allow the token to be passed as a header */
-    disable_headers: false,
+    /** Set this to true if you don't want to allow the token to be passed as a header */
+    disable_headers: false,  // defaults to false
 
-    /** set this to true if you don't want to allow the token to be passed as a query parameter */
-    disable_query: false,
+    /** Set this to true if you don't want to allow the token to be passed as a query parameter */
+    disable_query: false,  // defaults to false
 
-    /** set this to true if you don't want to allow the token to be passed as a cookie */
-    disable_cookies: false,
+    /** Set this to true if you don't want to allow the token to be passed as a cookie */
+    disable_cookies: false,  // defaults to false
+
+    /** Sets the token prefix. A null value means no prefix */
+    token_prefix: 'Bearer ', // defaults to 'Bearer '
 };
 
 fastify.register(require('fastify-esso')(opts));
@@ -328,7 +332,7 @@ None yet. But you're welcome to open a PR.
 ## License
 MIT License
 
-Copyright (c) 2020-2021 Patrick Pissurno
+Copyright (c) 2020-2022 Patrick Pissurno
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
