@@ -278,6 +278,9 @@ const opts = {
     /** Change the name of the request decorator, actual token will be available here once verified, useful if you want to register this package for different authentications */
     verifiedToken_data_name: "auth",
 
+    /** Use custom prefix for your token, use false to disable it */
+    token_prefix: "Bearer",
+
     /** set this to true if you don't want to allow the token to be passed as a header */
     disable_headers: false,
 
