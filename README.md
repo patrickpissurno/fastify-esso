@@ -3,7 +3,7 @@
 [![build status](https://travis-ci.org/patrickpissurno/fastify-esso.svg?branch=master)](https://travis-ci.org/patrickpissurno/fastify-esso)
 [![coverage status](https://coveralls.io/repos/github/patrickpissurno/fastify-esso/badge.svg?branch=master)](https://coveralls.io/github/patrickpissurno/fastify-esso?branch=master)
 [![known vulnerabilities](https://snyk.io/test/github/patrickpissurno/fastify-esso/badge.svg)](https://snyk.io/test/github/patrickpissurno/fastify-esso)
-[![downloads](https://img.shields.io/npm/dt/fastify-esso.svg)](http://npm-stats.com/~packages/fastify-esso)
+[![downloads](https://img.shields.io/npm/dt/fastify-esso.svg)](https://www.npmjs.com/package/fastify-esso)
 [![license](https://img.shields.io/github/license/patrickpissurno/fastify-esso.svg?maxAge=1800)](https://github.com/patrickpissurno/fastify-esso/blob/master/LICENSE)
 
 Hate boilerplate code? Want something fast and still impossible[<sup>[1]</sup>](https://crypto.stackexchange.com/questions/6712/is-aes-256-a-post-quantum-secure-cipher-or-not) to break?
