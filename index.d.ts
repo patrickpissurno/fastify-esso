@@ -43,7 +43,7 @@ export interface EssoOptions {
      * Sets the token prefix, by default `'Bearer '` is used. A null value means no prefix
      * @default 'Bearer '
      */
-    token_prefix?: string;
+    token_prefix?: string | null;
 
     /**
      * Allows for renaming the decorators this plugin adds to Fastify.
