@@ -37,7 +37,7 @@ declare module "fastify"{
 		require_test_auth: (arg0: FastifyInstance) => void;
         	generate_test_auth: (arg0: any) => Promise<string>;
 	}
-	export interface FastifyRequest<HttpRequest> {
+	export interface FastifyRequest {
 		test_auth: any;
 	}
 }
