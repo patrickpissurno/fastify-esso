@@ -84,13 +84,12 @@ declare module 'fastify' {
     interface FastifyRequest<HttpRequest> {
         auth: any;
     }
-    /** Add essoSecrets with getter and setter */
+    /** Add essoSecrets setter */
     interface FastifyInstance {
         generateAuthToken: function (any): Promise<string>;
         requireAuthentication: function (FastifyInstance): void;
         essoSecrets?: [string, string];
         setEssoSecret(key: string, value: any): void;
-        getEssoSecrets(): [string, string] | undefined;
     }
 }
 
