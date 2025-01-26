@@ -1,6 +1,6 @@
 {
   "name": "fastify-esso",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Fastify plugin for easy single sign-on",
   "main": "lib/index.js",
   "scripts": {
