@@ -1,6 +1,5 @@
 # fastify-esso
 [![npm-version](https://img.shields.io/npm/v/fastify-esso.svg)](https://www.npmjs.com/package/fastify-esso)
-[![build status](https://travis-ci.org/patrickpissurno/fastify-esso.svg?branch=master)](https://travis-ci.org/patrickpissurno/fastify-esso)
 [![coverage status](https://coveralls.io/repos/github/patrickpissurno/fastify-esso/badge.svg?branch=master)](https://coveralls.io/github/patrickpissurno/fastify-esso?branch=master)
 [![known vulnerabilities](https://snyk.io/test/github/patrickpissurno/fastify-esso/badge.svg)](https://snyk.io/test/github/patrickpissurno/fastify-esso)
 [![downloads](https://img.shields.io/npm/dt/fastify-esso.svg)](https://www.npmjs.com/package/fastify-esso)
