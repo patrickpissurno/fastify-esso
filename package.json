@@ -4,7 +4,7 @@
   "description": "Fastify plugin for easy single sign-on",
   "main": "lib/index.js",
   "scripts": {
-    "test": "tap lib/*.test.js --100"
+    "test": "tap lib/*.test.js --coverage-report=lcov --no-browser --show-full-coverage"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,6 @@
   },
   "devDependencies": {
     "fastify-cookie": "^5.7.0",
-    "tap": "^16.3.4"
+    "tap": "^21.0.1"
   }
 }

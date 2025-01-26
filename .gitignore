@@ -104,3 +104,6 @@ dist
 .tern-port
 
 .vscode
+
+# tap
+.tap/
