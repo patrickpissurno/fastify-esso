@@ -29,12 +29,15 @@
   },
   "homepage": "https://github.com/patrickpissurno/fastify-esso#readme",
   "dependencies": {
-    "fastify": "^3.29.4",
+    "fastify": "^3.29.5",
     "fastify-plugin": "^3.0.1",
     "http-errors": "^2.0.0"
   },
   "devDependencies": {
     "fastify-cookie": "^5.7.0",
     "tap": "^21.0.1"
+  },
+  "overrides": {
+    "cookie@^0.5.0": "0.7.2"
   }
 }
