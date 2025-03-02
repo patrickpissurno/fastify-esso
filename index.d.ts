@@ -59,26 +59,32 @@ export interface EssoOptions {
 }
 
 export interface EssoRenameDecoratorsOptions {
-    
+
     /**
      * Change the name of the `FastifyInstance.requireAuthentication` decorator
      * @default 'requireAuthentication'
      */
     requireAuthentication?: string;
-    
+
     /**
      * Change the name of the `FastifyInstance.generateAuthToken` decorator
      * @default 'generateAuthToken'
      */
-     generateAuthToken?: string;
-    
+    generateAuthToken?: string;
+
     /**
      * Change the name of the `FastifyRequest.auth` decorator
      * @default 'auth'
      */
-     auth?: string;
+    auth?: string;
 
 }
+
+type RequireAuthentication = {
+    (fastify: FastifyInstance): void;
+    (request: FastifyRequest, reply: FastifyReply): Promise<void>;
+};
+
 
 declare module 'fastify' {
     interface FastifyRequest<HttpRequest> {
@@ -86,8 +92,8 @@ declare module 'fastify' {
     }
 
     interface FastifyInstance {
-        generateAuthToken: function (any): Promise<string>;
-        requireAuthentication: function (FastifyInstance): void;
+        generateAuthToken: () => Promise<string>;
+        requireAuthentication: RequireAuthentication
     }
 }
 
