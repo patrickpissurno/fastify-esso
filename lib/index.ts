@@ -2,7 +2,7 @@ import fp from 'fastify-plugin';
 import err from 'http-errors';
 import { promisify } from 'util';
 import crypto from 'crypto';
-import type { FastifyInstance, FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { encrypt, decrypt } from './utils';
 
 const scryptAsync = promisify(crypto.scrypt) as (password: string, salt: string, keylen: number) => Promise<Buffer>;
@@ -165,7 +165,7 @@ const default_opts: ResolvedOptions = {
     }
 };
 
-function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPluginCallback {
+function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPluginAsync {
     if(options.rename_decorators)
         options.rename_decorators = Object.assign({}, default_opts.rename_decorators, options.rename_decorators);
     const opts: ResolvedOptions = Object.assign({}, default_opts, options) as ResolvedOptions;
@@ -202,10 +202,8 @@ function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPl
 
     /**
      * @param fastify 
-     * @param options 
-     * @param done 
      */
-    async function plugin (fastify: FastifyInstance, options: unknown, done: (err?: Error) => void) {
+    async function plugin (fastify: FastifyInstance) {
         const key = await scryptAsync(opts.secret, opts.header_name, 32);
 
         /**
@@ -279,11 +277,9 @@ function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPl
 
         fastify.decorate(opts.rename_decorators.requireAuthentication, requireAuthentication);
         fastify.decorate(opts.rename_decorators.generateAuthToken, generateAuthToken);
-
-        done();
     }
 
-    return fp((f: FastifyInstance, o: unknown, d: (err?: Error) => void) => plugin(f, o, d));
+    return fp(plugin, { fastify: '4.x || 5.x' });
 }
 
 export = fastifyEsso;

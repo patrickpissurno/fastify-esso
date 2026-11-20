@@ -11,6 +11,8 @@ Then, this plugin is for you.
 
 This [`fastify`](https://www.fastify.io) plugin turns the usual authentication nightmare into **something easily manageable**.
 
+Supports Fastify 4 and 5 (for Fastify 3, use version 1.x).
+
 Written in TypeScript, with type definitions included (using it from TypeScript is completely optional). Thanks @dodiego for the original type definitions!
 
 With TypeScript, type `request.auth` by adding the data you put in the token to `EssoAuth` ([declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation)):
@@ -36,7 +38,7 @@ const fastify = require('fastify')();
 // TODO: implement our stuff
 
 // let's start the server
-fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3000'));
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => console.log(err ? err : 'Listening at 3000'));
 ```
 
 ### #1 - Credentials validation
@@ -133,7 +135,7 @@ async function privateRoutes(fastify){
 fastify.register(privateRoutes);
 
 // let's start the server
-fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3000'));
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => console.log(err ? err : 'Listening at 3000'));
 ```
 
 

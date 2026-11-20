@@ -35,4 +35,4 @@ async function privateRoutes(fastify){
 
 fastify.register(routes);
 
-fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3000'));
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => console.log(err ? err : 'Listening at 3000'));
