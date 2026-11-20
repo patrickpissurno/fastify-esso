@@ -1,19 +1,14 @@
-const { promisify } = require('util');
-const crypto = require('crypto');
-const randomBytesAsync = promisify(crypto.randomBytes);
+import { promisify } from 'util';
+import crypto from 'crypto';
 
-module.exports = {
-    encrypt,
-    decrypt
-};
+const randomBytesAsync = promisify(crypto.randomBytes);
 
 /**
  * Turns cleartext into ciphertext
- * @param { Buffer } key 
- * @param { string } data 
- * @returns { Promise<string> }
+ * @param key 
+ * @param data 
  */
-async function encrypt(key, data){
+export async function encrypt(key: Buffer, data: string): Promise<string> {
     const iv = await randomBytesAsync(16);
 
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -21,7 +16,7 @@ async function encrypt(key, data){
     return new Promise((resolve, reject) => {
         let encrypted = '';
         cipher.on('readable', () => {
-            let chunk;
+            let chunk: Buffer | null;
             while (null !== (chunk = cipher.read())) {
                 encrypted += chunk.toString('hex');
             }
@@ -39,11 +34,10 @@ async function encrypt(key, data){
 
 /**
  * Turns ciphertext into cleartext
- * @param { Buffer } key 
- * @param { string } data 
- * @returns { Promise<string> }
+ * @param key 
+ * @param data 
  */
-async function decrypt(key, data){
+export async function decrypt(key: Buffer, data: string): Promise<string> {
     if(!data || data.length < 32 || data.length % 2 !== 0) // iv in hex format will always have 32 characters
         throw new Error('Invalid data');
 
@@ -53,7 +47,7 @@ async function decrypt(key, data){
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
 
     return new Promise((resolve, reject) => {
-        let chunk;
+        let chunk: Buffer | null;
         let decrypted = '';
         decipher.on('readable', () => {
             while (null !== (chunk = decipher.read())) {

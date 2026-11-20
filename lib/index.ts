@@ -1,16 +1,126 @@
-const fp = require('fastify-plugin');
-const err = require('http-errors');
-const { promisify } = require('util');
-const crypto = require('crypto');
-const scryptAsync = promisify(crypto.scrypt);
-const { encrypt, decrypt } = require('./utils');
+import fp from 'fastify-plugin';
+import err from 'http-errors';
+import { promisify } from 'util';
+import crypto from 'crypto';
+import type { FastifyInstance, FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify';
+import { encrypt, decrypt } from './utils';
 
-const default_opts = {
+const scryptAsync = promisify(crypto.scrypt) as (password: string, salt: string, keylen: number) => Promise<Buffer>;
+
+declare module 'fastify' {
+    /**
+     * Data stored in the token, available in `request.auth`.
+     * Add your own fields with declaration merging: `declare module 'fastify' { interface EssoAuth { user: string } }`
+     */
+    interface EssoAuth {}
+
+    interface FastifyRequest {
+        auth: EssoAuth;
+    }
+
+    interface FastifyInstance {
+        /**
+         * Call this function to generate an authentication token that grants access to routes that require authentication
+         * @param data This data will be made available in request.auth for routes inside an authenticated scope
+         */
+        generateAuthToken(data?: object): Promise<string>;
+
+        /**
+         * Call this function to require authentication for every route inside a Fastify Scope
+         * https://www.fastify.io/docs/latest/Plugins/
+         */
+        requireAuthentication(fastify: FastifyInstance): void;
+    }
+}
+
+namespace fastifyEsso {
+    export interface EssoOptions {
+
+        /**
+         * Custom validation function that is called after basic validation is executed.
+         * This function should throw in case validation fails
+         * */
+        extra_validation?: ((request: FastifyRequest, reply: FastifyReply) => Promise<void>) | null;
+
+        /** Secure key that will be used to do the encryption stuff (cannot be ommited) */
+        secret: string;
+
+        /**
+         * Request header name / query parameter name / cookie name. Defaults to 'authorization'
+         * @default 'authorization'
+         */
+        header_name?: string;
+
+        /**
+         * Set this to true if you don't want to allow the token to be passed as a header
+         * @default false
+         */
+        disable_headers?: boolean;
+
+        /**
+         * Set this to true if you don't want to allow the token to be passed as a query parameter
+         * @default false
+         */
+        disable_query?: boolean;
+
+        /**
+         * Set this to true if you don't want to allow the token to be passed as a cookie
+         * @default false
+         */
+        disable_cookies?: boolean;
+
+        /**
+         * Sets the token prefix, by default `'Bearer '` is used. A null value means no prefix
+         * @default 'Bearer '
+         */
+        token_prefix?: string | null;
+
+        /**
+         * Allows for renaming the decorators this plugin adds to Fastify.
+         * Useful if you want to register this plugin multiple times in the same scope
+         * (not usually needed, but can be useful sometimes).
+         *
+         * Note: if using TypeScript and intending to use this feature, you'll probably
+         * want to add type definitions for the renamed decorators, otherwise it might complain
+         * that they don't exist.
+         * */
+        rename_decorators?: EssoRenameDecoratorsOptions;
+
+    }
+
+    export interface EssoRenameDecoratorsOptions {
+
+        /**
+         * Change the name of the `FastifyInstance.requireAuthentication` decorator
+         * @default 'requireAuthentication'
+         */
+        requireAuthentication?: string;
+
+        /**
+         * Change the name of the `FastifyInstance.generateAuthToken` decorator
+         * @default 'generateAuthToken'
+         */
+        generateAuthToken?: string;
+
+        /**
+         * Change the name of the `FastifyRequest.auth` decorator
+         * @default 'auth'
+         */
+        auth?: string;
+
+    }
+}
+
+type ResolvedOptions = Required<Omit<fastifyEsso.EssoOptions, 'rename_decorators'>> & {
+    rename_decorators: Required<fastifyEsso.EssoRenameDecoratorsOptions>;
+};
+
+const default_opts: ResolvedOptions = {
     /**
      * Custom validation function that is called after basic validation is executed
      * This function should throw in case validation fails
-     * @param { import('fastify').FastifyRequest } request fastify request object
-     * @param { import('fastify').FastifyReply } reply  fastify reply object
+     * @param request fastify request object
+     * @param reply  fastify reply object
      */
     extra_validation: /* istanbul ignore next */ async function validation (request, reply){
         //by default does nothing
@@ -55,10 +165,10 @@ const default_opts = {
     }
 };
 
-module.exports = function builder(opts = default_opts){
-    if(opts.rename_decorators)
-        opts.rename_decorators = Object.assign({}, default_opts.rename_decorators, opts.rename_decorators);
-    opts = Object.assign({}, default_opts, opts);
+function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPluginCallback {
+    if(options.rename_decorators)
+        options.rename_decorators = Object.assign({}, default_opts.rename_decorators, options.rename_decorators);
+    const opts: ResolvedOptions = Object.assign({}, default_opts, options) as ResolvedOptions;
 
     if(!opts.header_name)
         throw new Error('header_name cannot be null');
@@ -91,33 +201,34 @@ module.exports = function builder(opts = default_opts){
         throw new Error('rename_decorators.generateAuthToken and rename_decorators.requireAuthentication should have distinct values');
 
     /**
-     * @param { import('fastify').FastifyInstance } fastify 
-     * @param { any } options 
-     * @param { function } done 
+     * @param fastify 
+     * @param options 
+     * @param done 
      */
-    async function plugin (fastify, options, done) {
+    async function plugin (fastify: FastifyInstance, options: unknown, done: (err?: Error) => void) {
         const key = await scryptAsync(opts.secret, opts.header_name, 32);
 
         /**
          * Custom validation function that is called after basic validation is ensured
-         * @param { import('fastify').FastifyRequest } req fastify request
-         * @param { import('fastify').FastifyReply } reply  fastify reply
+         * @param req fastify request
+         * @param reply  fastify reply
          */
-        async function validation(req, reply){
-            /** @type { string } */
-            let field = null;
+        async function validation(req: FastifyRequest, reply: FastifyReply){
+            const query = req.query as Record<string, string | undefined>;
+            const cookies = (req as FastifyRequest & { cookies?: Record<string, string | undefined> }).cookies;
+
+            let field: string | null = null;
             if(!opts.disable_headers && req.headers[opts.header_name])
-                field = req.headers[opts.header_name]
-            else if(!opts.disable_query && req.query[opts.header_name])
-                field = req.query[opts.header_name];
-            else if(!opts.disable_cookies && req.cookies && req.cookies[opts.header_name])
-                field = req.cookies[opts.header_name];
+                field = req.headers[opts.header_name] as string;
+            else if(!opts.disable_query && query[opts.header_name])
+                field = query[opts.header_name] as string;
+            else if(!opts.disable_cookies && cookies && cookies[opts.header_name])
+                field = cookies[opts.header_name] as string;
 
             if(!field)
                 throw new err.Unauthorized();
 
-            /** @type { string } */
-            let token;
+            let token: string;
 
             if(opts.token_prefix != null){
                 if(field.substring(0, opts.token_prefix.length) !== opts.token_prefix)
@@ -132,9 +243,9 @@ module.exports = function builder(opts = default_opts){
                 const json = await decrypt(key, token);
 
                 if(json === '`')
-                    req[opts.rename_decorators.auth] = { };
+                    Reflect.set(req, opts.rename_decorators.auth, { });
                 else
-                    req[opts.rename_decorators.auth] = JSON.parse(json);
+                    Reflect.set(req, opts.rename_decorators.auth, JSON.parse(json));
             }
             catch(ex){
                 throw new err.Forbidden();
@@ -147,18 +258,17 @@ module.exports = function builder(opts = default_opts){
         /** 
          * Call this function to require authentication for every route inside a Fastify Scope
          * https://www.fastify.io/docs/latest/Plugins/
-         * @param { import('fastify').FastifyInstance } fastify
+         * @param fastify
          */
-        function requireAuthentication(fastify){
+        function requireAuthentication(fastify: FastifyInstance){
             fastify.addHook('preHandler', validation);
         }
 
         /**
          * Call this function to generate an authentication token that grants access to routes that require authentication
-         * @param { object } data This data will be made available in request.auth for routes inside an authenticated scope
-         * @returns { Promise<string> }
+         * @param data This data will be made available in request.auth for routes inside an authenticated scope
          */
-        async function generateAuthToken(data){
+        async function generateAuthToken(data?: object){
             const prefix = opts.token_prefix != null ? opts.token_prefix : '';
 
             if(!data || Object.keys(data).length < 1)
@@ -166,12 +276,14 @@ module.exports = function builder(opts = default_opts){
 
             return prefix + await encrypt(key, JSON.stringify(data));
         }
-        
+
         fastify.decorate(opts.rename_decorators.requireAuthentication, requireAuthentication);
         fastify.decorate(opts.rename_decorators.generateAuthToken, generateAuthToken);
 
         done();
     }
 
-    return fp((f, o, d) => plugin(f, o, d));
+    return fp((f: FastifyInstance, o: unknown, d: (err?: Error) => void) => plugin(f, o, d));
 }
+
+export = fastifyEsso;

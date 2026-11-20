@@ -1,3 +1,4 @@
+// Uses the compiled plugin in dist/: run with `npm run example`
 const fastify = require('fastify')();
 const err = require('http-errors');
 
