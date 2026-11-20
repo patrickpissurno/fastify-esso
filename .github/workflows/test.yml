@@ -1,0 +1,25 @@
+name: test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+        fastify-version: [4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - if: matrix.fastify-version == 4
+        run: npm i --no-save fastify@4 @fastify/cookie@9
+      - run: npm run build
+      - run: npm test

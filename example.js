@@ -1,7 +1,8 @@
+// Uses the compiled plugin in dist/: run with `npm run example`
 const fastify = require('fastify')();
 const err = require('http-errors');
 
-fastify.register(require('.')({ secret: '11111111111111111111' }));
+fastify.register(require('.'), { secret: '11111111111111111111' });
 
 /** @param { import('fastify').FastifyInstance } fastify */
 async function routes(fastify){
@@ -34,4 +35,4 @@ async function privateRoutes(fastify){
 
 fastify.register(routes);
 
-fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3000'));
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => console.log(err ? err : 'Listening at 3000'));

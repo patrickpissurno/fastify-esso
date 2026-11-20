@@ -11,7 +11,18 @@ Then, this plugin is for you.
 
 This [`fastify`](https://www.fastify.io) plugin turns the usual authentication nightmare into **something easily manageable**.
 
-And also has first-party support for TypeScript (completely optional). Thanks @dodiego for the PR!
+Supports Fastify 4 and 5 (for Fastify 3, use version 1.x).
+
+Written in TypeScript, with type definitions included (using it from TypeScript is completely optional). Thanks @dodiego for the original type definitions!
+
+With TypeScript, type `request.auth` by adding the data you put in the token to `EssoAuth` ([declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation)):
+```ts
+declare module 'fastify' {
+    interface EssoAuth {
+        user: string;
+    }
+}
+```
 
 
 <br>
@@ -27,7 +38,7 @@ const fastify = require('fastify')();
 // TODO: implement our stuff
 
 // let's start the server
-fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3000'));
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => console.log(err ? err : 'Listening at 3000'));
 ```
 
 ### #1 - Credentials validation
@@ -97,7 +108,7 @@ const fastify = require('fastify')();
  * to something complex, with at least 20 characters
  * for it to be safe
  */
-fastify.register(require('fastify-esso')({ secret: '11111111111111111111' }));
+fastify.register(require('fastify-esso'), { secret: '11111111111111111111' });
 
 fastify.post('/auth', async (req, reply) => {
 
@@ -124,7 +135,7 @@ async function privateRoutes(fastify){
 fastify.register(privateRoutes);
 
 // let's start the server
-fastify.listen(3000, '0.0.0.0', (err) => console.log(err ? err : 'Listening at 3000'));
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => console.log(err ? err : 'Listening at 3000'));
 ```
 
 
@@ -301,7 +312,7 @@ const opts = {
     }
 };
 
-fastify.register(require('fastify-esso')(opts));
+fastify.register(require('fastify-esso'), opts);
 ```
 
 <br>
