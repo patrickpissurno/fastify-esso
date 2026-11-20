@@ -2,7 +2,7 @@
 const fastify = require('fastify')();
 const err = require('http-errors');
 
-fastify.register(require('.')({ secret: '11111111111111111111' }));
+fastify.register(require('.'), { secret: '11111111111111111111' });
 
 /** @param { import('fastify').FastifyInstance } fastify */
 async function routes(fastify){

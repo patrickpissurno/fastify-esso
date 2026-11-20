@@ -2,7 +2,7 @@ import fp from 'fastify-plugin';
 import err from 'http-errors';
 import { promisify } from 'util';
 import crypto from 'crypto';
-import type { FastifyInstance, FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { encrypt, decrypt } from './utils';
 
 const scryptAsync = promisify(crypto.scrypt) as (password: string, salt: string, keylen: number) => Promise<Buffer>;
@@ -165,7 +165,7 @@ const default_opts: ResolvedOptions = {
     }
 };
 
-function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPluginAsync {
+function resolveOptions(options: fastifyEsso.EssoOptions = default_opts): ResolvedOptions {
     if(options.rename_decorators)
         options.rename_decorators = Object.assign({}, default_opts.rename_decorators, options.rename_decorators);
     const opts: ResolvedOptions = Object.assign({}, default_opts, options) as ResolvedOptions;
@@ -200,86 +200,90 @@ function fastifyEsso(options: fastifyEsso.EssoOptions = default_opts): FastifyPl
     if(opts.rename_decorators.generateAuthToken === opts.rename_decorators.requireAuthentication)
         throw new Error('rename_decorators.generateAuthToken and rename_decorators.requireAuthentication should have distinct values');
 
+    return opts;
+}
+
+/**
+ * @param fastify 
+ * @param options 
+ */
+async function fastifyEsso (fastify: FastifyInstance, options: fastifyEsso.EssoOptions) {
+    const opts = resolveOptions(options);
+    const key = await scryptAsync(opts.secret, opts.header_name, 32);
+
     /**
-     * @param fastify 
+     * Custom validation function that is called after basic validation is ensured
+     * @param req fastify request
+     * @param reply  fastify reply
      */
-    async function plugin (fastify: FastifyInstance) {
-        const key = await scryptAsync(opts.secret, opts.header_name, 32);
+    async function validation(req: FastifyRequest, reply: FastifyReply){
+        const query = req.query as Record<string, string | undefined>;
+        const cookies = (req as FastifyRequest & { cookies?: Record<string, string | undefined> }).cookies;
 
-        /**
-         * Custom validation function that is called after basic validation is ensured
-         * @param req fastify request
-         * @param reply  fastify reply
-         */
-        async function validation(req: FastifyRequest, reply: FastifyReply){
-            const query = req.query as Record<string, string | undefined>;
-            const cookies = (req as FastifyRequest & { cookies?: Record<string, string | undefined> }).cookies;
+        let field: string | null = null;
+        if(!opts.disable_headers && req.headers[opts.header_name])
+            field = req.headers[opts.header_name] as string;
+        else if(!opts.disable_query && query[opts.header_name])
+            field = query[opts.header_name] as string;
+        else if(!opts.disable_cookies && cookies && cookies[opts.header_name])
+            field = cookies[opts.header_name] as string;
 
-            let field: string | null = null;
-            if(!opts.disable_headers && req.headers[opts.header_name])
-                field = req.headers[opts.header_name] as string;
-            else if(!opts.disable_query && query[opts.header_name])
-                field = query[opts.header_name] as string;
-            else if(!opts.disable_cookies && cookies && cookies[opts.header_name])
-                field = cookies[opts.header_name] as string;
+        if(!field)
+            throw new err.Unauthorized();
 
-            if(!field)
-                throw new err.Unauthorized();
+        let token: string;
 
-            let token: string;
-
-            if(opts.token_prefix != null){
-                if(field.substring(0, opts.token_prefix.length) !== opts.token_prefix)
-                    throw new err.Forbidden();
-
-                token = field.substring(opts.token_prefix.length, field.length);
-            }
-            else
-                token = field;
-
-            try {
-                const json = await decrypt(key, token);
-
-                if(json === '`')
-                    Reflect.set(req, opts.rename_decorators.auth, { });
-                else
-                    Reflect.set(req, opts.rename_decorators.auth, JSON.parse(json));
-            }
-            catch(ex){
+        if(opts.token_prefix != null){
+            if(field.substring(0, opts.token_prefix.length) !== opts.token_prefix)
                 throw new err.Forbidden();
-            }
 
-            if(opts.extra_validation != null)
-                await opts.extra_validation(req, reply);
+            token = field.substring(opts.token_prefix.length, field.length);
+        }
+        else
+            token = field;
+
+        try {
+            const json = await decrypt(key, token);
+
+            if(json === '`')
+                Reflect.set(req, opts.rename_decorators.auth, { });
+            else
+                Reflect.set(req, opts.rename_decorators.auth, JSON.parse(json));
+        }
+        catch(ex){
+            throw new err.Forbidden();
         }
 
-        /** 
-         * Call this function to require authentication for every route inside a Fastify Scope
-         * https://www.fastify.io/docs/latest/Plugins/
-         * @param fastify
-         */
-        function requireAuthentication(fastify: FastifyInstance){
-            fastify.addHook('preHandler', validation);
-        }
-
-        /**
-         * Call this function to generate an authentication token that grants access to routes that require authentication
-         * @param data This data will be made available in request.auth for routes inside an authenticated scope
-         */
-        async function generateAuthToken(data?: object){
-            const prefix = opts.token_prefix != null ? opts.token_prefix : '';
-
-            if(!data || Object.keys(data).length < 1)
-                return prefix + await encrypt(key, '`'); // we need to encrypt something, so let's just save bandwidth
-
-            return prefix + await encrypt(key, JSON.stringify(data));
-        }
-
-        fastify.decorate(opts.rename_decorators.requireAuthentication, requireAuthentication);
-        fastify.decorate(opts.rename_decorators.generateAuthToken, generateAuthToken);
+        if(opts.extra_validation != null)
+            await opts.extra_validation(req, reply);
     }
 
-    return fp(plugin, { fastify: '4.x || 5.x' });
+    /** 
+     * Call this function to require authentication for every route inside a Fastify Scope
+     * https://www.fastify.io/docs/latest/Plugins/
+     * @param fastify
+     */
+    function requireAuthentication(fastify: FastifyInstance){
+        fastify.addHook('preHandler', validation);
+    }
+
+    /**
+     * Call this function to generate an authentication token that grants access to routes that require authentication
+     * @param data This data will be made available in request.auth for routes inside an authenticated scope
+     */
+    async function generateAuthToken(data?: object){
+        const prefix = opts.token_prefix != null ? opts.token_prefix : '';
+
+        if(!data || Object.keys(data).length < 1)
+            return prefix + await encrypt(key, '`'); // we need to encrypt something, so let's just save bandwidth
+
+        return prefix + await encrypt(key, JSON.stringify(data));
+    }
+
+    fastify.decorate(opts.rename_decorators.requireAuthentication, requireAuthentication);
+    fastify.decorate(opts.rename_decorators.generateAuthToken, generateAuthToken);
 }
+
+fp(fastifyEsso, { fastify: '4.x || 5.x', name: 'fastify-esso' });
 
 export = fastifyEsso;

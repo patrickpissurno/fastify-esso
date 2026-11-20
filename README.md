@@ -108,7 +108,7 @@ const fastify = require('fastify')();
  * to something complex, with at least 20 characters
  * for it to be safe
  */
-fastify.register(require('fastify-esso')({ secret: '11111111111111111111' }));
+fastify.register(require('fastify-esso'), { secret: '11111111111111111111' });
 
 fastify.post('/auth', async (req, reply) => {
 
@@ -312,7 +312,7 @@ const opts = {
     }
 };
 
-fastify.register(require('fastify-esso')(opts));
+fastify.register(require('fastify-esso'), opts);
 ```
 
 <br>

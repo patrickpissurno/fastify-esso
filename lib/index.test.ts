@@ -14,10 +14,14 @@ declare module 'fastify' {
 /** Options with wrong types, to test the runtime validation */
 const invalid = (options: unknown) => options as esso.EssoOptions;
 
+const register = (options: esso.EssoOptions) => async () => {
+    await Fastify().register(esso, options).ready();
+};
+
 const fastify = Fastify();
 
 fastify.register(fastifyCookie);
-fastify.register(esso({ secret: '11111111111111111111', extra_validation: null }));
+fastify.register(esso, { secret: '11111111111111111111', extra_validation: null });
 
 fastify.get('/', async (req, reply) => {
     return { ok: true };
@@ -48,23 +52,23 @@ tap.test(`rename decorators`, rename_decorators);
 async function builder_parameters(tap: Test){
     await fastify.ready();
 
-    tap.rejects(async () => esso(), 'secret cannot be null');
-    tap.rejects(async () => esso(invalid({ secret: null })), 'secret cannot be null');
-    tap.rejects(async () => esso({ secret: '1' }), 'secret should have at least 20 characters');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), header_name: null })), 'header_name cannot be null');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), header_name: 123 })), 'header_name should be a string');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), extra_validation: 123 })), 'extra_validation should either be null or a function');
-    tap.rejects(async () => esso({ secret: '1'.repeat(20), disable_headers: true, disable_query: true, disable_cookies: true }), 'disabling both headers, query and cookies should throw');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), token_prefix: false })), 'token_prefix should either be null or a string');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), rename_decorators: { auth: null } })), 'rename_decorators.auth should be a non empty string');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), rename_decorators: { generateAuthToken: null } })), 'rename_decorators.generateAuthToken should be a non empty string');
-    tap.rejects(async () => esso(invalid({ secret: '1'.repeat(20), rename_decorators: { requireAuthentication: null } })), 'rename_decorators.requireAuthentication should be a non empty string');
-    tap.rejects(async () => esso({ secret: '1'.repeat(20), rename_decorators: { generateAuthToken: 'a', requireAuthentication: 'a' } }), 'rename_decorators.generateAuthToken and rename_decorators.requireAuthentication should have distinct values');
+    tap.rejects(register(invalid(undefined)), 'secret cannot be null');
+    tap.rejects(register(invalid({ secret: null })), 'secret cannot be null');
+    tap.rejects(register({ secret: '1' }), 'secret should have at least 20 characters');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), header_name: null })), 'header_name cannot be null');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), header_name: 123 })), 'header_name should be a string');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), extra_validation: 123 })), 'extra_validation should either be null or a function');
+    tap.rejects(register({ secret: '1'.repeat(20), disable_headers: true, disable_query: true, disable_cookies: true }), 'disabling both headers, query and cookies should throw');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), token_prefix: false })), 'token_prefix should either be null or a string');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), rename_decorators: { auth: null } })), 'rename_decorators.auth should be a non empty string');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), rename_decorators: { generateAuthToken: null } })), 'rename_decorators.generateAuthToken should be a non empty string');
+    tap.rejects(register(invalid({ secret: '1'.repeat(20), rename_decorators: { requireAuthentication: null } })), 'rename_decorators.requireAuthentication should be a non empty string');
+    tap.rejects(register({ secret: '1'.repeat(20), rename_decorators: { generateAuthToken: 'a', requireAuthentication: 'a' } }), 'rename_decorators.generateAuthToken and rename_decorators.requireAuthentication should have distinct values');
 
-    tap.resolves(async () => esso({ secret: '1'.repeat(20) }), 'valid settings should not throw');
-    tap.resolves(async () => esso({ secret: '1'.repeat(20), header_name: 'x-auth' }), 'valid settings should not throw');
-    tap.resolves(async () => esso({ secret: '1'.repeat(20), extra_validation: async () => {} }), 'valid settings should not throw');
-    tap.resolves(async () => esso({ secret: '1'.repeat(20), token_prefix: 'rickroll ' }), 'valid settings should not throw');
+    tap.resolves(register({ secret: '1'.repeat(20) }), 'valid settings should not throw');
+    tap.resolves(register({ secret: '1'.repeat(20), header_name: 'x-auth' }), 'valid settings should not throw');
+    tap.resolves(register({ secret: '1'.repeat(20), extra_validation: async () => {} }), 'valid settings should not throw');
+    tap.resolves(register({ secret: '1'.repeat(20), token_prefix: 'rickroll ' }), 'valid settings should not throw');
 }
 
 
@@ -147,7 +151,7 @@ async function extra_validation(tap: Test){
             throw new err.Forbidden('extra validation failed');
     }
 
-    fastify.register(esso({ secret: '11111111111111111111', extra_validation: validation }));
+    fastify.register(esso, { secret: '11111111111111111111', extra_validation: validation });
 
     async function privateRoutes(fastify: FastifyInstance){
         fastify.requireAuthentication(fastify);
@@ -177,7 +181,7 @@ async function extra_validation(tap: Test){
 async function disable_headers(tap: Test){
     const fastify = Fastify();
 
-    fastify.register(esso({ secret: '11111111111111111111', disable_headers: true }));
+    fastify.register(esso, { secret: '11111111111111111111', disable_headers: true });
 
     async function privateRoutes(fastify: FastifyInstance){
         fastify.requireAuthentication(fastify);
@@ -204,7 +208,7 @@ async function disable_headers(tap: Test){
 async function disable_query(tap: Test){
     const fastify = Fastify();
 
-    fastify.register(esso({ secret: '11111111111111111111', disable_query: true }));
+    fastify.register(esso, { secret: '11111111111111111111', disable_query: true });
 
     async function privateRoutes(fastify: FastifyInstance){
         fastify.requireAuthentication(fastify);
@@ -231,7 +235,7 @@ async function disable_query(tap: Test){
 async function disable_cookies(tap: Test){
     const fastify = Fastify();
 
-    fastify.register(esso({ secret: '11111111111111111111', disable_cookies: true }));
+    fastify.register(esso, { secret: '11111111111111111111', disable_cookies: true });
 
     async function privateRoutes(fastify: FastifyInstance){
         fastify.requireAuthentication(fastify);
@@ -258,7 +262,7 @@ async function disable_cookies(tap: Test){
 async function disable_token_prefix(tap: Test){
     const fastify = Fastify();
 
-    fastify.register(esso({ secret: '11111111111111111111', token_prefix: null }));
+    fastify.register(esso, { secret: '11111111111111111111', token_prefix: null });
 
     async function privateRoutes(fastify: FastifyInstance){
         fastify.requireAuthentication(fastify);
@@ -286,10 +290,10 @@ type Renamed = FastifyInstance & {
 async function rename_decorators(tap: Test){
     const fastify = Fastify();
 
-    fastify.register(esso({
+    fastify.register(esso, {
         secret: '11111111111111111111',
         rename_decorators: { auth: 'greatest', generateAuthToken: 'rick', requireAuthentication: 'roll' }
-    }));
+    });
 
     async function privateRoutes(fastify: FastifyInstance){
         (fastify as unknown as Renamed).roll(fastify);
