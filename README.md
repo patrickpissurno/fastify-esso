@@ -11,7 +11,16 @@ Then, this plugin is for you.
 
 This [`fastify`](https://www.fastify.io) plugin turns the usual authentication nightmare into **something easily manageable**.
 
-And also has first-party support for TypeScript (completely optional). Thanks @dodiego for the PR!
+Written in TypeScript, with type definitions included (using it from TypeScript is completely optional). Thanks @dodiego for the original type definitions!
+
+With TypeScript, type `request.auth` by adding the data you put in the token to `EssoAuth` ([declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation)):
+```ts
+declare module 'fastify' {
+    interface EssoAuth {
+        user: string;
+    }
+}
+```
 
 
 <br>
